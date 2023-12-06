@@ -1,69 +1,95 @@
 
+import { useReducer, useState } from "react";
 import { v4 as uuidv4 } from 'uuid';
+
 import Joke from "./components/Joke.js";
 import JokeForm from "./components/JokeForm.js";
-import { useState } from "react";
+
+
+const initialState = []
+
+function jokeReducer(state, action){
+  
+  switch (action.type) {
+    case 'addJoke':
+      return [...state, action.payload]
+   
+    case 'deleteJoke':
+      return state.filter((item) => item.id !== action.payload)
+    
+    case 'likedJoke':
+      return  state.map(item => {
+        if (item.id === action.payload) {
+            return { ...item, likes: item.likes + 1 };
+          }
+        return item;
+      })
+    
+    case 'dislikedJoke':
+      return state.map(item => {
+        if (item.id === action.payload) {
+          return { ...item, likes: item.likes - 1};
+        }
+        return item;
+      })
+    default:
+      return state
+  }
+}
 
 const App = () => {
-// state
- const [allJokes, setAllJokes] = useState([])
 
+const [jokeState, dispatch] = useReducer(jokeReducer, initialState)
 
  // functions
   function addJoke(joke){
+
      const jokeObj = {
       text: joke,
       id: uuidv4(),
       likes: 0,
      }
-
-     setAllJokes((prevState) => (
-      [...prevState, jokeObj]
-    ))  
+    
+    dispatch({
+      type: 'addJoke',
+      payload: jokeObj,
+    })
   }
 
+
  function deleteJoke(id){
-     setAllJokes((prevState) => (
-       prevState.filter((item) => item.id !== id)
-     ))
+     dispatch({
+      type: 'deleteJoke',
+      payload: id,
+     })
   }
 
 
 function likesUp(id){
-  setAllJokes(prevState =>
-    prevState.map(item => {
-      if (item.id === id) {
-        return { ...item, likes: item.likes + 1 };
-      }
-      return item;
-    })
-  );
+  dispatch({
+    type: 'likedJoke',
+    payload: id,
+  })
 }
 
 
 function likesDown(id){
-  setAllJokes(prevState =>
-    prevState.map(item => {
-      if (item.id === id) {
-        return { ...item, likes: item.likes - 1};
-      }
-      return item;
-    })
-  );
+  dispatch({
+    type: 'dislikedJoke',
+    payload: id,
+  })
 }
-
-
 
 
   //effects
 
   return (
-    <div className="">
+    <div className="container">
     <h1>SVG Dad Jokes</h1>
 
     <JokeForm onAddJoke={addJoke}/>
 
-    {allJokes.length > 0 && allJokes.map(joke => (
+    {jokeState.length > 0 && jokeState.map(joke => (
       <Joke
       joke={joke}
       key={joke.id}
