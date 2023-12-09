@@ -1,12 +1,15 @@
 
-import { useReducer, useState } from "react";
+import { useEffect, useReducer} from "react";
 import { v4 as uuidv4 } from 'uuid';
 
 import Joke from "./components/Joke.js";
 import JokeForm from "./components/JokeForm.js";
 
 
-const initialState = []
+// initial state with local storaage
+// gotta use this method and not return like we do for state local storage
+const initialState = JSON.parse(localStorage.getItem('allJokes')) || [];
+
 
 function jokeReducer(state, action){
   
@@ -40,6 +43,7 @@ function jokeReducer(state, action){
 const App = () => {
 
 const [jokeState, dispatch] = useReducer(jokeReducer, initialState)
+
 
  // functions
   function addJoke(joke){
@@ -82,6 +86,10 @@ function likesDown(id){
 
 
   //effects
+  
+useEffect(() => {
+  localStorage.setItem('allJokes', JSON.stringify(jokeState))
+}, [jokeState]);
 
   return (
     <div className="container">
